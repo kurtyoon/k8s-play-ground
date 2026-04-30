@@ -58,7 +58,9 @@ jobs:
             -ignore-filename-pattern '.*kustomization.yaml' \
             -ignore-filename-pattern '.*values.yaml' \
             -ignore-filename-pattern '.*README.md' \
-            $(find apps argocd -type f \( -name '*.yaml' -o -name '*.yml' \))
+            -ignore-filename-pattern '.*docker-compose.*' \
+            -ignore-filename-pattern '.*patch-.*\.yaml' \
+            $(find apps argocd -type f \( -name '*.yaml' -o -name '*.yml' \) ! -name 'docker-compose*' ! -name 'patch-*.yaml')
 
   kustomize-build:
     name: Kustomize Build Check
