@@ -254,12 +254,24 @@ dashboards:
           "weekStart": ""
         }
 
-# Anonymous access for local development
+# Anonymous access for local development (disabled when OIDC is configured)
 env:
-  GF_AUTH_ANONYMOUS_ENABLED: "true"
-  GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
   GF_SECURITY_ADMIN_PASSWORD: "admin"
   GF_SECURITY_ALLOW_EMBEDDING: "true"
+
+# Keycloak OIDC configuration
+grafana.ini:
+  auth.generic_oauth:
+    enabled: true
+    name: Keycloak
+    allow_sign_up: true
+    client_id: grafana
+    client_secret: xuhFgCmvqOiE9WWML5EYCSnX8uLkm3Vw
+    scopes: openid profile email
+    auth_url: http://keycloak.local/auth/realms/k8s-playground/protocol/openid-connect/auth
+    token_url: http://keycloak.local/auth/realms/k8s-playground/protocol/openid-connect/token
+    api_url: http://keycloak.local/auth/realms/k8s-playground/protocol/openid-connect/userinfo
+    role_attribute_path: "contains(groups[*], 'argocd-admin') && 'Admin' || 'Viewer'"
 
 # Enable ingress for grafana.local
 ingress:

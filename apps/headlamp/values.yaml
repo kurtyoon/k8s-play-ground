@@ -28,6 +28,12 @@ resources:
 
 config:
   inCluster: true
+  oidc:
+    issuerURL: "http://keycloak.local/auth/realms/k8s-playground"
+    clientID: "headlamp"
+    clientSecret: "XwRV95sRK0pWU6Wqyt92uRBejVCuUWou"
+    scopes: "openid profile email"
+    idpURI: "/oidc"
 
 serviceAccount:
   create: true
