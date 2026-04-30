@@ -1,0 +1,72 @@
+---
+# OpenBao - Secret Management
+# https://openbao.org/
+#
+# Chart: openbao/openbao
+# Repo: https://openbao.github.io/openbao-helm
+#
+# Deployment: Single-node integrated storage (Raft) with PVC persistence.
+# This is NOT dev mode — it demonstrates a production-like pattern
+# (integrated storage, persistent volume) on a single-node local cluster.
+
+server:
+  enabled: true
+
+  image:
+    repository: openbao/openbao
+    # Pin to a specific release
+    tag: 2.2.0
+
+  # Disable HA — single node for local cluster
+  ha:
+    enabled: false
+
+  # Enable standalone mode with integrated Raft storage
+  standalone:
+    enabled: true
+    config: |
+      ui = true
+
+      listener "tcp" {
+        tls_disable     = 1
+        address         = "[::]:8200"
+        cluster_address = "[::]:8201"
+      }
+
+      storage "raft" {
+        path = "/openbao/data"
+      }
+
+  # Persist Raft data across pod restarts
+  dataStorage:
+    enabled: true
+    size: 2Gi
+    mountPath: /openbao/data
+    accessMode: ReadWriteOnce
+
+  # Expose UI via Traefik
+  ingress:
+    enabled: true
+    hosts:
+      - host: openbao.local
+        paths: []
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  service:
+    enabled: true
+    active:
+      type: ClusterIP
+      port: 8200
+
+# Disable injector (not needed for this playground)
+injector:
+  enabled: false
