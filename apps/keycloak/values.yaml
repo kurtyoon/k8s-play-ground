@@ -1,0 +1,67 @@
+---
+# Chart: codecentric/keycloakx
+# Repo: https://codecentric.github.io/helm-charts
+#
+# Bitnami dependency removed. Uses standalone PostgreSQL deployed via raw manifests.
+
+replicas: 1
+
+image:
+  tag: "26.2.0"
+
+command:
+  - /opt/keycloak/bin/kc.sh
+  - start
+
+extraEnvVars:
+  - name: KEYCLOAK_ADMIN
+    value: admin
+  - name: KEYCLOAK_ADMIN_PASSWORD
+    value: admin
+  - name: KC_DB
+    value: postgres
+  - name: KC_DB_URL
+    value: jdbc:postgresql://postgres.iam.svc.cluster.local:5432/keycloak
+  - name: KC_DB_USERNAME
+    value: keycloak
+  - name: KC_DB_PASSWORD
+    value: keycloak
+  - name: KC_PROXY
+    value: edge
+  - name: KC_HOSTNAME
+    value: keycloak.local
+  - name: KC_HTTP_ENABLED
+    value: "true"
+
+postgresql:
+  enabled: false
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: true
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+  rules:
+    - host: keycloak.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+podSecurityContext:
+  fsGroup: 1000
+
+containerSecurityContext:
+  runAsUser: 1000
+  runAsNonRoot: true
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false

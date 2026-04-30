@@ -113,7 +113,7 @@ Colima with Virtualization.Framework does **not** forward VM ports 80/443 to the
 ```bash
 sudo tee /etc/hosts <<'HOSTS'
 127.0.0.1 localhost
-127.0.0.1 headlamp.local grafana.local web-filesystem.local
+127.0.0.1 headlamp.local grafana.local web-filesystem.local keycloak.local openbao.local
 HOSTS
 sudo dscacheutil -flushcache
 ```
@@ -213,6 +213,65 @@ This installs:
 - **Grafana** (visualization with pre-configured datasources)
 
 Access Grafana at `http://grafana.local` (anonymous login enabled for local dev).
+
+## Install Keycloak (OIDC Provider)
+
+```bash
+kubectl apply -f argocd/apps/keycloak.yaml
+```
+
+Or let ArgoCD sync it automatically via the root app.
+
+Access Keycloak at `http://keycloak.local`.
+
+Default admin credentials: `admin` / `admin` (local playground only — rotate for non-local use).
+
+## Install OpenBao (Secret Management)
+
+```bash
+kubectl apply -f argocd/apps/openbao.yaml
+```
+
+Access OpenBao UI at `http://openbao.local`.
+
+### Initialize and Unseal OpenBao
+
+OpenBao deploys sealed by default. Run once:
+
+```bash
+kubectl exec -it openbao-0 -n vault -- bao operator init -key-shares=1 -key-threshold=1
+```
+
+Save the **Unseal Key** and **Initial Root Token**. Then unseal:
+
+```bash
+kubectl exec -it openbao-0 -n vault -- bao operator unseal <UNSEAL_KEY>
+```
+
+To configure the Kubernetes auth method for ESO:
+
+```bash
+kubectl exec -it openbao-0 -n vault -- sh
+export VAULT_TOKEN=<ROOT_TOKEN>
+
+bao auth enable kubernetes
+bao write auth/kubernetes/config \
+  kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443" \
+  token_reviewer_jwt="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+  kubernetes_ca_cert="$(cat /var/run/secrets/kubernetes.io/serviceaccount/ca.crt)"
+
+bao policy write external-secrets - <<EOF
+path "secret/*" {
+  capabilities = ["read"]
+}
+EOF
+
+bao write auth/kubernetes/role/external-secrets \
+  bound_service_account_names=external-secrets \
+  bound_service_account_namespaces=external-secrets \
+  policies=external-secrets \
+  ttl=1h
+```
 
 ## Cluster Security Hardening
 
@@ -405,6 +464,40 @@ sudo launchctl start com.k8s.traefik.ingress
 # Or re-run setup
 bash /tmp/setup-k8s-ingress.sh
 ```
+
+### Keycloak returns 502 or connection refused
+
+**Cause:** Traefik cannot reach Keycloak backend.
+
+**Check:**
+```bash
+kubectl -n iam get networkpolicy
+kubectl -n kube-system get networkpolicy allow-traefik-egress
+```
+
+**Fix:** Ensure `allow-traefik-ingress` in `iam` allows port 8080, and `allow-traefik-egress` in `kube-system` allows port 8080.
+
+### OpenBao UI shows "Vault is sealed"
+
+**Cause:** OpenBao was not initialized or is still sealed after restart.
+
+**Fix:**
+```bash
+kubectl exec -it openbao-0 -n vault -- bao status
+kubectl exec -it openbao-0 -n vault -- bao operator unseal <UNSEAL_KEY>
+```
+
+### External Secrets Operator cannot connect to OpenBao
+
+**Cause:** NetworkPolicy blocks `external-secrets` namespace from reaching OpenBao, or OpenBao Kubernetes auth is not configured.
+
+**Check:**
+```bash
+kubectl -n external-secrets logs deploy/external-secrets
+kubectl -n vault get networkpolicy allow-external-secrets-to-openbao
+```
+
+**Fix:** Ensure `allow-external-secrets-to-openbao` exists in `vault`, and follow the OpenBao initialization steps above to enable Kubernetes auth.
 
 ### `.local` domains return 502 from nginx
 
