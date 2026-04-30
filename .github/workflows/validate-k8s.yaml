@@ -1,0 +1,77 @@
+name: Validate Kubernetes Manifests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'argocd/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'argocd/**'
+      - '.github/workflows/**'
+
+jobs:
+  yaml-lint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run yamllint
+        uses: karancode/yamllint-github-action@master
+        with:
+          yamllint_file_or_dir: '.'
+          yamllint_strict: false
+          yamllint_comment: false
+        continue-on-error: true
+
+  kubeconform:
+    name: Kubeconform Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.14.0'
+
+      - name: Download kubeconform
+        run: |
+          curl -sL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Validate Kubernetes manifests
+        run: |
+          kubeconform \
+            -kubernetes-version 1.30.0 \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            -summary \
+            -verbose \
+            -ignore-filename-pattern '.*kustomization.yaml' \
+            -ignore-filename-pattern '.*values.yaml' \
+            -ignore-filename-pattern '.*README.md' \
+            $(find apps argocd -type f \( -name '*.yaml' -o -name '*.yml' \))
+
+  kustomize-build:
+    name: Kustomize Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        run: |
+          curl -sL https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.3.0/kustomize_v5.3.0_linux_amd64.tar.gz | tar xz
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Build web-filesystem overlay
+        run: |
+          kustomize build apps/web-filesystem/k8s/overlays/local > /dev/null
