@@ -12,7 +12,6 @@ image:
 command:
   - /opt/keycloak/bin/kc.sh
   - start
-  - --optimized
 
 extraEnvVars:
   - name: KEYCLOAK_ADMIN
@@ -61,7 +60,6 @@ resources:
 securityContext:
   runAsUser: 1000
   runAsNonRoot: true
-  readOnlyRootFilesystem: true
   allowPrivilegeEscalation: false
 
 podSecurityContext:
