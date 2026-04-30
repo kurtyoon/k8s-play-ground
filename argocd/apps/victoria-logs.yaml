@@ -1,26 +1,26 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: headlamp
+  name: victoria-logs
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   sources:
-    - repoURL: https://kubernetes-sigs.github.io/headlamp/
-      chart: headlamp
+    - repoURL: https://victoriametrics.github.io/helm-charts/
+      chart: victoria-logs-single
       targetRevision: "*"
       helm:
-        releaseName: headlamp
+        releaseName: victoria-logs
         valueFiles:
-          - $values/apps/headlamp/values.yaml
+          - $values/apps/observability/victoria-logs-values.yaml
     - repoURL: https://github.com/kurtyoon/k8s-play-ground.git
       targetRevision: main
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: headlamp
+    namespace: observability
   syncPolicy:
     automated:
       prune: true
