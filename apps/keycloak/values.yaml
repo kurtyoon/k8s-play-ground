@@ -13,7 +13,7 @@ command:
   - /opt/keycloak/bin/kc.sh
   - start
 
-extraEnvVars:
+extraEnv: |
   - name: KEYCLOAK_ADMIN
     value: admin
   - name: KEYCLOAK_ADMIN_PASSWORD
