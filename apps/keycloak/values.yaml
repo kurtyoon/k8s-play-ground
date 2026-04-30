@@ -12,6 +12,7 @@ image:
 command:
   - /opt/keycloak/bin/kc.sh
   - start
+  - --optimized
 
 extraEnvVars:
   - name: KEYCLOAK_ADMIN
