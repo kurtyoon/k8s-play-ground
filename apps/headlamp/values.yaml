@@ -1,0 +1,74 @@
+---
+# Headlamp - Kubernetes Web UI
+# https://headlamp.dev/
+# Maintained by: Kubernetes SIG UI
+#
+# Installation method: Helm (Operator-style declarative management)
+# This directory follows the GitOps-friendly Helm chart management pattern.
+# The desired state is declared in values.yaml and applied idempotently
+# via scripts/install.sh.
+#
+# Why no Operator?
+# Headlamp does not provide an official Kubernetes Operator (CRD + Controller).
+# The SIG UI team maintains only the Helm chart as the in-cluster deployment method.
+# This pattern mimics an Operator by treating Helm as the reconciliation engine
+# and keeping all configuration declarative and version-controlled.
+
+# Release name used by Helm
+releaseName: headlamp
+namespace: headlamp
+
+# ---------------------------------------------------------------------------
+# Base Helm values
+# ---------------------------------------------------------------------------
+
+image:
+  repository: ghcr.io/headlamp-k8s/headlamp
+  tag: v0.41.0
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+config:
+  inCluster: true
+
+# Use the namespace's default ServiceAccount with minimal permissions
+# For production, create a dedicated ServiceAccount with explicit RBAC.
+serviceAccount:
+  create: true
+  name: headlamp
+
+# ---------------------------------------------------------------------------
+# Optional: NodePort for direct access (local environments without Ingress)
+# Uncomment the following block to expose via NodePort instead of port-forward.
+# ---------------------------------------------------------------------------
+# service:
+#   type: NodePort
+#   port: 80
+#   nodePort: 30003
+
+# ---------------------------------------------------------------------------
+# Ingress (Traefik)
+# ---------------------------------------------------------------------------
+ingress:
+  enabled: true
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+  hosts:
+    - host: headlamp.local
+      paths:
+        - path: /
+          type: Prefix
+  tls: []

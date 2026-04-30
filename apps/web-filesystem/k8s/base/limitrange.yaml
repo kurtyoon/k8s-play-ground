@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: web-filesystem-limits
+  namespace: web-filesystem
+  labels:
+    app.kubernetes.io/name: web-filesystem
+    app.kubernetes.io/part-of: agent-filesystem
+spec:
+  limits:
+    - default:
+        cpu: 200m
+        memory: 128Mi
+      defaultRequest:
+        cpu: 50m
+        memory: 64Mi
+      max:
+        cpu: "1"
+        memory: 512Mi
+      min:
+        cpu: 10m
+        memory: 16Mi
+      type: Container

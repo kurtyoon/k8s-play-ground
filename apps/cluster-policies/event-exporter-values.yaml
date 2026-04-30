@@ -1,0 +1,28 @@
+config:
+  logLevel: error
+  receivers:
+    - name: vlogs
+      webhook:
+        endpoint: "http://victoria-logs-victoria-logs-single-server:9428/insert/jsonline"
+        headers:
+          Content-Type: application/json
+        layout:
+          kind: Event
+          msg: "{{ .Message }}"
+          time: "{{ .LastTimestamp }}"
+          namespace: "{{ .Namespace }}"
+          reason: "{{ .Reason }}"
+          type: "{{ .Type }}"
+          source: "{{ .Source }}"
+  route:
+    routes:
+      - match:
+          - receiver: vlogs
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi

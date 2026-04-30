@@ -1,0 +1,12 @@
+services:
+  agent-filesystem:
+    build: .
+    container_name: agent-filesystem-browser
+    ports:
+      - "3000:3000"
+    volumes:
+      - /Users/yunchangseop/.agent:/data:ro
+    environment:
+      - TARGET_DIR=/data
+      - PORT=3000
+    restart: always

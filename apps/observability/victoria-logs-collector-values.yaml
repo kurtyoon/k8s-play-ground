@@ -1,0 +1,37 @@
+# VictoriaLogs Collector - DaemonSet log shipper
+# https://docs.victoriametrics.com/victorialogs/vlagent/
+
+remoteWrite:
+  - url: http://victoria-logs-victoria-logs-single-server.observability.svc.cluster.local:9428
+
+collector:
+  timeField:
+    - time
+    - ts
+    - timestamp
+  msgField:
+    - message
+    - msg
+    - log
+  streamFields:
+    - kubernetes.container_name
+    - kubernetes.pod_name
+    - kubernetes.pod_namespace
+  includePodLabels: true
+  includePodAnnotations: false
+
+securityContext:
+  enabled: true
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: web-filesystem-quota
+  namespace: web-filesystem
+  labels:
+    app.kubernetes.io/name: web-filesystem
+    app.kubernetes.io/part-of: agent-filesystem
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 512Mi
+    limits.cpu: "2"
+    limits.memory: 1Gi
+    pods: "5"
+    services: "3"
+    persistentvolumeclaims: "2"

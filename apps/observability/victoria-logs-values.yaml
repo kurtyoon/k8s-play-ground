@@ -1,0 +1,36 @@
+# VictoriaLogs Single - Lightweight log database
+# https://docs.victoriametrics.com/victorialogs/
+
+server:
+  enabled: true
+  replicaCount: 1
+
+  retentionPeriod: 7d
+
+  extraArgs:
+    envflag.enable: true
+    envflag.prefix: VM_
+    loggerFormat: json
+    httpListenAddr: :9428
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  persistentVolume:
+    enabled: true
+    size: 8Gi
+
+  securityContext:
+    enabled: true
+
+  podSecurityContext:
+    enabled: true
+
+serviceAccount:
+  create: true
+  automountToken: true
