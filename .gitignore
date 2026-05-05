@@ -1,24 +1,60 @@
-# macOS
-.DS_Store
+# Terraform / OpenTofu
+*.tfstate
+*.tfstate.*
+*.tfvars
+!terraform.tfvars.example
+.terraform/
+.terraform.lock.hcl
+tofu.plan
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
+# Ansible
+*.retry
+ansible/*.log
+
+# Kubernetes
+kubeconfig*
+.kube/
 
 # Secrets
-*.env
 *.key
 *.pem
+*.dec
+secrets.yaml
+secrets.yml
+.env
 .envrc
+
+# SOPS
+.sops.yaml
+!/.sops.yaml
+
+# Local development
+.DS_Store
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OCI
+oci-outputs.json
+
+# Colima
+.colima/
 
 # Agent / local tooling
 .sisyphus/
 .omx/
 
 # Local build artifacts
-*.log
 dist/
 build/
 node_modules/

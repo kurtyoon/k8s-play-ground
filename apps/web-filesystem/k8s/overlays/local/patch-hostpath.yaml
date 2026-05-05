@@ -1,4 +1,4 @@
 [
   {"op": "remove", "path": "/spec/template/spec/volumes/0/emptyDir"},
-  {"op": "add", "path": "/spec/template/spec/volumes/0/hostPath", "value": {"path": "/Users/yunchangseop/.agent", "type": "Directory"}}
+  {"op": "add", "path": "/spec/template/spec/volumes/0/hostPath", "value": {"path": "/Users/kurtyoon/.agent", "type": "Directory"}}
 ]

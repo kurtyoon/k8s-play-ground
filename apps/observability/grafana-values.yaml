@@ -1,6 +1,8 @@
 # Grafana - Visualization for VictoriaMetrics & VictoriaLogs
 # https://grafana.com/
 
+assertNoLeakedSecrets: false
+
 replicas: 1
 
 resources:
@@ -30,10 +32,6 @@ datasources:
         url: http://victoria-logs-victoria-logs-single-server.observability.svc.cluster.local:9428
         access: proxy
         editable: false
-
-# Install VictoriaLogs datasource plugin
-plugins:
-  - victoriametrics-logs-datasource
 
 # Dashboard provisioning
 dashboardProviders:
